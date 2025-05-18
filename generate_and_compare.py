@@ -6,7 +6,7 @@ import difflib
 import os
 
 API_KEY = 'metabash_secure_key_2024'
-API_URL = 'http://"66.228.62.178":8080/x7y9z2'
+API_URL = 'http://"yourhost":8080/x7y9z2'
 
 def get_payload():
     headers = {'x-api-key': API_KEY}
