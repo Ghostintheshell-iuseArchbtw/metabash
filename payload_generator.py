@@ -12,12 +12,12 @@ from config import C2_ENDPOINTS
 
 # Configuration
 C2_ENDPOINTS = [
-    ("ghostintheshellredteam.com", 4444),
-    ("ghostintheshellredteam.com", 9000),
-    ("ghostintheshellredteam.com", 1337),
-    ("66.228.62.178", 4444),
-    ("66.228.62.178", 9000),
-    ("66.228.62.178", 1337)
+    ("example.com", 4444),
+    ("example", 9000),
+    ("example", 1337),
+    ("192.168.1.1", 4444),
+    ("192.168.1.1", 9000),
+    ("192.168.1.1", 1337)
 ]
 
 # --- Enhanced Variable/Function Name Morphing ---
